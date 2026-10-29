@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>My Shipping</title>
+<meta name="description" content="My Shipping — track your parcels: home, orders, live tracking, wallet and account.">
+<meta name="theme-color" content="#232B7A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Shipping">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--navy:#232B7A;--bg:#F6F7FB;--card:#fff;--line:#E5E7F0;--grey:#6B7280;--blue:#2F6BFF;--amber:#F59E0B;--green:#22C55E;--red:#EF4444}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#DDE1F0;color:#1B1B2F;-webkit-tap-highlight-color:transparent}
+  #app{max-width:430px;min-height:100dvh;margin:0 auto;background:var(--bg);position:relative;padding-bottom:86px;box-shadow:0 0 40px rgba(0,0,0,.15)}
+  .pad{padding:16px}
+  .topbar{display:flex;align-items:center;gap:12px;background:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
+  .avatar{width:46px;height:46px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .avatar.sm{width:52px;height:52px;font-size:18px}
+  .topbar h1{font-size:17px}
+  .topbar p{font-size:13px;color:var(--grey)}
+  .iconbtn{margin-left:auto;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer;flex-shrink:0}
+  .search{width:100%;padding:13px 14px 13px 42px;border:1px solid var(--line);border-radius:16px;font-size:15px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;outline:none}
+  #view-booking input{background-image:none}
+  .stats{display:flex;gap:12px;margin:20px 0 24px}
+  .stat{flex:1;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 6px;text-align:center}
+  .stat b{display:block;font-size:22px;color:var(--navy)}
+  .stat span{font-size:12px;color:var(--grey)}
+  h2{font-size:18px;margin-bottom:12px}
+  .services{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+  .svc{text-align:center}
+  .svc i{display:flex;width:56px;height:56px;margin:0 auto 6px;background:#fff;border:1px solid var(--line);border-radius:16px;align-items:center;justify-content:center;font-style:normal;font-size:24px}
+  .svc span{font-size:13px;font-weight:600}
+  .row-between{display:flex;justify-content:space-between;align-items:center}
+  .linkbtn{background:none;border:none;color:var(--navy);font-weight:700;font-size:14px;cursor:pointer}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:14px;cursor:pointer}
+  .card.noclick{cursor:default}
+  .p-head{display:flex;gap:12px;align-items:flex-start}
+  .p-ico{width:52px;height:52px;border-radius:14px;background:rgba(35,43,122,.08);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+  .p-head b{font-size:16px}
+  .p-head small{color:var(--grey);font-size:13px}
+  .badge{margin-left:auto;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+  .badge.transit{background:rgba(47,107,255,.12);color:var(--blue)}
+  .badge.process{background:rgba(245,158,11,.14);color:var(--amber)}
+  .badge.delivered{background:rgba(34,197,94,.13);color:var(--green)}
+  .route{display:flex;align-items:flex-start;margin-top:14px}
+  .route .from,.route .to{flex:1}
+  .route .to{text-align:right}
+  .route label{font-size:12px;color:var(--grey)}
+  .route div{font-weight:600;margin-top:2px}
+  .route .arrow{font-size:18px;color:#9CA3AF;padding:16px 4px 0}
+  .meta{display:flex;align-items:center;gap:5px;margin-top:12px;font-size:12px;color:var(--grey)}
+  .meta .price{margin-left:auto;font-size:15px;font-weight:800;color:#1B1B2F}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 16px 12px}
+  .tab{border:1px solid var(--line);background:#fff;padding:9px 16px;border-radius:20px;font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .view{display:none}
+  .view.active{display:block}
+  .mapbox{border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#E9EEF8}
+  .mapbox svg{display:block;width:100%;height:auto}
+  .courier{display:flex;gap:12px;align-items:center}
+  .courier b{font-size:16px}
+  .courier small{color:var(--grey);font-size:13px}
+  .rating{background:rgba(245,158,11,.15);padding:6px 10px;border-radius:20px;font-weight:700;font-size:13px;white-space:nowrap}
+  .callbtn{width:42px;height:42px;border-radius:50%;border:none;background:rgba(35,43,122,.08);font-size:18px;cursor:pointer;flex-shrink:0}
+  .drow{display:flex;justify-content:space-between;gap:16px;padding:6px 0}
+  .drow span{color:var(--grey)}
+  .drow b{text-align:right}
+  hr{border:none;border-top:1px solid var(--line);margin:10px 0}
+  .tl{position:relative;padding-left:40px;margin-bottom:20px}
+  .tl:last-child{margin-bottom:0}
+  .tl::before{content:"";position:absolute;left:13px;top:30px;bottom:-22px;width:2px;background:#E5E7F0}
+  .tl:last-child::before{display:none}
+  .tl.done::before{background:var(--green)}
+  .tl .dot{position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:#D1D5DB;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
+  .tl.done .dot{background:var(--green)}
+  .tl b{display:block}
+  .tl small{color:var(--grey);font-size:13px}
+  .okbox{background:rgba(34,197,94,.12);border-radius:16px;padding:16px;display:flex;gap:10px;margin-top:16px;font-size:15px}
+  .balance{background:var(--navy);border-radius:24px;padding:24px;color:#fff;margin-bottom:24px}
+  .balance small{color:rgba(255,255,255,.7)}
+  .balance b{font-size:36px;display:block;margin:8px 0 20px}
+  .balance .btns{display:flex;gap:12px}
+  .balance button{flex:1;padding:12px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer}
+  .balance .add{background:#fff;color:var(--navy);border:none}
+  .balance .wd{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5)}
+  .tx{display:flex;gap:12px;align-items:center}
+  .tx .t-ico{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .tx .t-ico.up{background:rgba(239,68,68,.12)}
+  .tx .t-ico.down{background:rgba(34,197,94,.12)}
+  .tx b{font-size:15px}
+  .tx small{color:var(--grey)}
+  .tx .amt{margin-left:auto;font-weight:800}
+  .amt.pos{color:var(--green)}
+  .amt.neg{color:var(--red)}
+  .menu{list-style:none}
+  .menu li{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;cursor:pointer;font-weight:600;font-size:15px}
+  .menu li span{color:var(--navy);font-size:19px}
+  .menu li i{margin-left:auto;color:#9CA3AF;font-style:normal}
+  .logout{width:100%;padding:14px;border:none;border-radius:14px;background:var(--red);color:#fff;font-weight:700;font-size:16px;cursor:pointer;margin-top:8px}
+  .sendbtn{width:100%;padding:15px;border:none;border-radius:14px;background:var(--navy);color:#fff;font-weight:700;font-size:16px;cursor:pointer}
+  .backbtn{background:none;border:none;font-size:22px;cursor:pointer;padding:4px 8px 4px 0}
+  .empty{text-align:center;color:var(--grey);padding:40px 20px}
+  .navbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:100%;max-width:430px;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom));z-index:20}
+  .navbar button{flex:1;background:none;border:none;font-size:11px;font-weight:600;color:var(--grey);cursor:pointer;padding:6px 0 2px}
+  .navbar button i{display:block;font-style:normal;font-size:22px;margin-bottom:2px}
+  .navbar button.active{color:var(--navy)}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:#1B1B2F;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:50;display:none;max-width:88vw;text-align:center}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ============ HOME ============ -->
+  <section id="view-home" class="view active">
+    <div class="topbar">
+      <div class="avatar">OH</div>
+      <div><h1 id="homeGreeting">Hello, Ossama</h1><p>Track your parcels</p></div>
+      <button class="iconbtn" onclick="toast('No new notifications')">🔔</button>
+    </div>
+    <div class="pad">
+      <input class="search" id="searchInput" placeholder="Track by booking number…" onkeydown="if(event.key==='Enter')searchBooking()">
+      <div class="stats">
+        <div class="stat"><b>32</b><span>Parcels sent</span></div>
+        <div class="stat"><b>27</b><span>Delivered</span></div>
+        <div class="stat"><b>5</b><span>In transit</span></div>
+      </div>
+      <h2>Services</h2>
+      <div class="services">
+        <div class="svc"><i>🚲</i><span>Bike</span></div>
+        <div class="svc"><i>🚗</i><span>Car</span></div>
+        <div class="svc"><i>🚚</i><span>Truck</span></div>
+        <div class="svc"><i>✈️</i><span>Air</span></div>
+      </div>
+      <div class="row-between"><h2>Active shipments</h2><button class="linkbtn" onclick="showView('orders')">See all</button></div>
+      <div id="activeList"></div>
+      <button class="sendbtn" onclick="openBooking()">＋ Send a new parcel</button>
+    </div>
+  </section>
+
+  <!-- ============ ORDERS ============ -->
+  <section id="view-orders" class="view">
+    <div class="topbar"><h1>My Shipping</h1></div>
+    <div class="tabs" style="padding-top:14px">
+      <button class="tab active" onclick="setFilter('all',this)">All</button>
+      <button class="tab" onclick="setFilter('transit',this)">Transit</button>
+      <button class="tab" onclick="setFilter('process',this)">On Process</button>
+      <button class="tab" onclick="setFilter('delivered',this)">Delivered</button>
+    </div>
+    <div class="pad" style="padding-top:4px"><div id="ordersList"></div></div>
+  </section>
+
+  <!-- ============ TRACK ============ -->
+  <section id="view-track" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Track Package</h1>
+    </div>
+    <div class="pad"><div id="trackContent"></div></div>
+  </section>
+
+  <!-- ============ BOOKING ============ -->
+  <section id="view-booking" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Send a parcel</h1>
+    </div>
+    <div class="pad">
+      <div class="card noclick">
+        <label style="font-size:13px;color:#6B7280">Product</label>
+        <input id="bkProduct" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Shoes, Watch, Books…">
+        <label style="font-size:13px;color:#6B7280">From (city)</label>
+        <input id="bkFrom" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Casablanca">
+        <label style="font-size:13px;color:#6B7280">To (city)</label>
+        <input id="bkTo" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Rabat">
+        <label style="font-size:13px;color:#6B7280">Weight (kg)</label>
+        <input id="bkWeight" class="search" style="padding-left:14px;margin:6px 0 14px" type="number" min="0.1" step="0.1" value="1" oninput="updateEstimate()">
+        <div class="drow"><span>Estimated price</span><b id="bkEstimate">$7.50</b></div>
+        <hr>
+        <p style="font-size:13px;color:#6B7280;margin-bottom:14px">Price = $4.00 base + $3.50 per kg. Your parcel gets a booking number and appears in Orders and Tracking.</p>
+        <button class="sendbtn" onclick="submitBooking()">Confirm booking</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WALLET ============ -->
+  <section id="view-wallet" class="view">
+    <div class="topbar"><h1>Wallet</h1></div>
+    <div class="pad">
+      <div class="balance">
+        <small>Total balance</small>
+        <b id="walletBalance">$256.00</b>
+        <div class="btns">
+          <button class="add" onclick="topup()">Add money</button>
+          <button class="wd" onclick="withdraw()">Withdraw</button>
+        </div>
+      </div>
+      <h2>Transactions</h2>
+      <div id="txList"></div>
+    </div>
+  </section>
+
+  <!-- ============ ACCOUNT ============ -->
+  <section id="view-account" class="view">
+    <div class="topbar"><h1>Account</h1></div>
+    <div class="pad">
+      <div class="card noclick">
+        <div class="courier">
+          <div class="avatar sm">OH</div>
+          <div><b style="font-size:18px" id="profName">Ossama Hamrani</b><br><small><span id="profEmail">oussamahamrani73@gmail.com</span><br><span id="profPhone">06 42 85 72 71</span></small></div>
+          <span style="margin-left:auto;color:#9CA3AF;cursor:pointer" onclick="editProfile()">✎</span>
+        </div>
+      </div>
+      <h2>Settings</h2>
+      <ul class="menu">
+        <li onclick="toast('My addresses is a mock in this demo')"><span>📍</span>My addresses<i>›</i></li>
+        <li onclick="toast('Payment methods is a mock in this demo')"><span>💳</span>Payment methods<i>›</i></li>
+        <li onclick="toast('Notifications is a mock in this demo')"><span>🔔</span>Notifications<i>›</i></li>
+        <li onclick="toast('Help & support is a mock in this demo')"><span>❓</span>Help &amp; support<i>›</i></li>
+        <li onclick="toast('Settings is a mock in this demo')"><span>⚙️</span>Settings<i>›</i></li>
+      </ul>
+      <button class="logout" onclick="toast('Log out is a mock in this demo')">Log out</button>
+    </div>
+  </section>
+
+  <nav class="navbar">
+    <button class="active" onclick="showView('home',this)"><i>🏠</i>Home</button>
+    <button onclick="showView('orders',this)"><i>📦</i>Orders</button>
+    <button onclick="showView('wallet',this)"><i>👛</i>Wallet</button>
+    <button onclick="showView('account',this)"><i>👤</i>Account</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const PARCELS = [
+  {id:'BKG-2322-HD3', product:'Shoes', icon:'👞', from:'New York', to:'San Francisco', fromAddr:'New York, USA', toAddr:'San Francisco, USA', status:'transit', date:'Today', time:'10:42 AM', price:12.50, weight:'2.4 kg', progress:2},
+  {id:'BKG-3422-ND3', product:'Sneakers', icon:'👟', from:'Chicago', to:'Los Angeles', fromAddr:'Chicago, USA', toAddr:'Los Angeles, USA', status:'delivered', date:'Yesterday', time:'04:15 PM', price:9.90, weight:'1.8 kg', progress:4},
+  {id:'BKG-4352-LD3', product:'Watches', icon:'⌚', from:'Boston', to:'Miami', fromAddr:'Boston, USA', toAddr:'Miami, USA', status:'process', date:'Today', time:'09:05 AM', price:15.00, weight:'0.9 kg', progress:1},
+  {id:'BKG-3232-KD3', product:'Perfumes', icon:'🌸', from:'Seattle', to:'Denver', fromAddr:'Seattle, USA', toAddr:'Denver, USA', status:'process', date:'Yesterday', time:'06:30 PM', price:11.20, weight:'1.2 kg', progress:1},
+  {id:'BKG-5188-TR2', product:'Headphones', icon:'🎧', from:'Austin', to:'Dallas', fromAddr:'Austin, USA', toAddr:'Dallas, USA', status:'transit', date:'Today', time:'08:20 AM', price:8.40, weight:'0.6 kg', progress:3},
+];
+const TXS = [
+  {title:'Top up', date:'Today, 09:00 AM', amount:50.00, credit:true},
+  {title:'Shipping • BKG-2322-HD3', date:'Today, 10:42 AM', amount:12.50, credit:false},
+  {title:'Shipping • BKG-3422-ND3', date:'Yesterday, 04:15 PM', amount:9.90, credit:false},
+  {title:'Refund • BKG-5188-TR2', date:'Yesterday, 11:02 AM', amount:8.40, credit:true},
+];
+const STEPS = [
+  {t:'Order Placed', s:'Parcel received at the hub'},
+  {t:'In Transit', s:'Parcel is on the way'},
+  {t:'Out for Delivery', s:'Courier is nearby'},
+  {t:'Delivered', s:'Parcel handed over'},
+];
+const STATUS = {transit:['Transit','transit'], process:['On Process','process'], delivered:['Delivered','delivered']};
+
+let currentView = 'home';
+let prevView = 'home';
+let currentFilter = 'all';
+let toastTimer = null;
+
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.display = 'none'; }, 2600);
+}
+
+function showView(name){
+  currentView = name;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = document.getElementById('view-' + name);
+  if (el) el.classList.add('active');
+  const navMap = {home:0, orders:1, wallet:2, account:3};
+  document.querySelectorAll('.navbar button').forEach((b, i) => {
+    b.classList.toggle('active', navMap[name] === i);
+  });
+  if (name === 'wallet') renderWallet();
+  window.scrollTo(0, 0);
+}
+
+function goBack(){ showView(prevView); }
+
+function parcelCard(p){
+  const [label, cls] = STATUS[p.status];
+  return `<div class="card" onclick="openTrack('${p.id}')">
+    <div class="p-head">
+      <div class="p-ico">${p.icon}</div>
+      <div><b>${p.product}</b><br><small>${p.id}</small></div>
+      <span class="badge ${cls}">${label}</span>
+    </div>
+    <div class="route">
+      <div class="from"><label>From</label><div>${p.from}</div></div>
+      <div class="arrow">→</div>
+      <div class="to"><label>To</label><div>${p.to}</div></div>
+    </div>
+    <div class="meta"><span>🕐 ${p.date} • ${p.time}</span><span class="price">$${p.price.toFixed(2)}</span></div>
+  </div>`;
+}
+
+function renderActive(){
+  document.getElementById('activeList').innerHTML =
+    PARCELS.filter(p => p.status !== 'delivered').map(parcelCard).join('');
+}
+
+function renderOrders(){
+  const list = currentFilter === 'all' ? PARCELS : PARCELS.filter(p => p.status === currentFilter);
+  document.getElementById('ordersList').innerHTML = list.length
+    ? list.map(parcelCard).join('')
+    : '<div class="empty">No parcels in this category</div>';
+}
+
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderOrders();
+}
+
+function quad(t, p0, p1, p2){
+  const u = 1 - t;
+  return [u*u*p0[0] + 2*u*t*p1[0] + t*t*p2[0], u*u*p0[1] + 2*u*t*p1[1] + t*t*p2[1]];
+}
+
+function mapSVG(progress){
+  const start = [56, 187], ctrl = [180, 26], end = [344, 99];
+  const blocks = [[10,10],[66,10],[122,10],[234,10],[290,10],[10,66],[122,66],[178,66],[290,66],[346,66],[10,122],[66,122],[178,122],[234,122],[10,178],[122,178],[234,178],[290,178],[346,178],[66,234],[178,234],[290,234]];
+  const blocksSVG = blocks.map(b => `<rect x="${b[0]}" y="${b[1]}" width="36" height="36" rx="8" fill="#DCE4F2"/>`).join('');
+  const t = progress;
+  const cp = quad(t, start, ctrl, end);
+  const pathD = `M ${start[0]} ${start[1]} Q ${ctrl[0]} ${ctrl[1]} ${end[0]} ${end[1]}`;
+  return `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="260" fill="#E9EEF8"/>${blocksSVG}
+    <path d="${pathD}" fill="none" stroke="#232B7A" stroke-opacity="0.25" stroke-width="3" stroke-linecap="round"/>
+    <path d="${pathD}" fill="none" stroke="#232B7A" stroke-width="4" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="${100 * (1 - t)}"/>
+    <circle cx="${start[0]}" cy="${start[1]}" r="16" fill="#64748B"/>
+    <circle cx="${end[0]}" cy="${end[1]}" r="16" fill="#22C55E"/>
+    <text x="${end[0]}" y="${end[1] + 5}" text-anchor="middle" font-size="16" fill="#fff" font-weight="bold">✓</text>
+    <g><circle cx="${cp[0]}" cy="${cp[1]}" r="21" fill="#fff" stroke="#232B7A" stroke-width="2"/>
+    <text x="${cp[0]}" y="${cp[1] + 6}" text-anchor="middle" font-size="18">🚚</text></g>
+  </svg>`;
+}
+
+function openTrack(id){
+  const p = PARCELS.find(x => x.id === id);
+  if (!p) return;
+  prevView = currentView === 'track' ? prevView : currentView;
+  const [label, cls] = STATUS[p.status];
+  const progress = p.progress / 4;
+  const timeline = STEPS.map((s, i) => `
+    <div class="tl ${i < p.progress ? 'done' : ''}">
+      <div class="dot">${i < p.progress ? '✓' : ''}</div>
+      <b>${s.t}</b><small>${s.s}</small>
+    </div>`).join('');
+  document.getElementById('trackContent').innerHTML = `
+    <div class="mapbox">${mapSVG(progress)}</div>
+    <div class="card noclick" style="margin-top:16px">
+      <div class="courier">
+        <div class="avatar">DR</div>
+        <div><b>Dana Reid</b><br><small>Delivery Van • NY-4821</small></div>
+        <span class="rating">★ 4.8</span>
+        <button class="callbtn" onclick="toast('Calling the courier is a mock in this demo')">📞</button>
+        <button class="callbtn" onclick="toast('Messaging the courier is a mock in this demo')">💬</button>
+      </div>
+    </div>
+    <div class="card noclick">
+      <div class="drow"><span>Booking number</span><b>${p.id}</b></div><hr>
+      <div class="drow"><span>From</span><b>${p.fromAddr}</b></div>
+      <div class="drow"><span>To</span><b>${p.toAddr}</b></div><hr>
+      <div class="drow"><span>Weight</span><b>${p.weight}</b></div>
+      <div class="drow"><span>Order cost</span><b>$${p.price.toFixed(2)}</b></div>
+      <div class="drow"><span>Status</span><span class="badge ${cls}">${label}</span></div>
+    </div>
+    <h2>Tracking timeline</h2>
+    <div class="card noclick">${timeline}</div>
+    ${p.status === 'delivered' ? `<div class="okbox">✅<span>Parcel delivered. Thank you for shipping with us!</span></div>` : ''}
+  `;
+  showView('track');
+}
+
+function searchBooking(){
+  const q = document.getElementById('searchInput').value.trim().toUpperCase();
+  if (!q) return;
+  const found = PARCELS.find(p => p.id.includes(q));
+  if (found) openTrack(found.id);
+  else toast('No parcel found for "' + q + '" (mock data)');
+}
+
+function openBooking(){
+  prevView = currentView === 'booking' ? prevView : currentView;
+  showView('booking');
+}
+
+function updateEstimate(){
+  const w = parseFloat(document.getElementById('bkWeight').value) || 0;
+  document.getElementById('bkEstimate').textContent = '$' + (4 + 3.5 * w).toFixed(2);
+}
+
+function iconFor(product){
+  const p = product.toLowerCase();
+  if (p.includes('shoe') || p.includes('sneaker')) return '👟';
+  if (p.includes('watch')) return '⌚';
+  if (p.includes('perfume')) return '🌸';
+  if (p.includes('headphone') || p.includes('earphone')) return '🎧';
+  if (p.includes('phone')) return '📱';
+  if (p.includes('book')) return '📚';
+  if (p.includes('cloth') || p.includes('shirt') || p.includes('dress')) return '👕';
+  return '📦';
+}
+
+function saveCustom(p){
+  try {
+    const stored = JSON.parse(localStorage.getItem('ms-custom-parcels') || '[]');
+    stored.push(p);
+    localStorage.setItem('ms-custom-parcels', JSON.stringify(stored));
+  } catch (e) { /* private mode: keep it in memory only */ }
+}
+
+function loadCustom(){
+  try {
+    const stored = JSON.parse(localStorage.getItem('ms-custom-parcels') || '[]');
+    stored.forEach(p => PARCELS.push(p));
+  } catch (e) { /* ignore */ }
+}
+
+function submitBooking(){
+  const product = document.getElementById('bkProduct').value.trim();
+  const from = document.getElementById('bkFrom').value.trim();
+  const to = document.getElementById('bkTo').value.trim();
+  const weight = parseFloat(document.getElementById('bkWeight').value);
+  if (!product || !from || !to || !weight || weight <= 0) {
+    toast('Please fill product, from, to and a valid weight');
+    return;
+  }
+  const digits = Math.floor(1000 + Math.random() * 9000);
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ0123456789';
+  let suffix = '';
+  for (let i = 0; i < 3; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
+  const now = new Date();
+  let h = now.getHours(), ampm = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  const time = h + ':' + String(now.getMinutes()).padStart(2, '0') + ' ' + ampm;
+  const p = {
+    id: 'BKG-' + digits + '-' + suffix,
+    product: product, icon: iconFor(product),
+    from: from, to: to, fromAddr: from, toAddr: to,
+    status: 'process', date: 'Today', time: time,
+    price: Math.round((4 + 3.5 * weight) * 100) / 100,
+    weight: weight + ' kg', progress: 1
+  };
+  if (p.price > balance) {
+    toast('Insufficient wallet balance (' + fmt(balance) + '). Top up first.');
+    showView('wallet');
+    return;
+  }
+  balance = Math.round((balance - p.price) * 100) / 100;
+  saveBalance();
+  addTx('Shipping • ' + p.id, p.price, false);
+  PARCELS.push(p);
+  saveCustom(p);
+  renderActive();
+  renderOrders();
+  toast('Booking confirmed: ' + p.id);
+  openTrack(p.id);
+}
+
+let balance = 256.00;
+function fmt(n){ return '$' + n.toFixed(2); }
+function loadBalance(){ try { const b = parseFloat(localStorage.getItem('ms-balance')); if (!isNaN(b)) balance = b; } catch(e){} }
+function saveBalance(){ try { localStorage.setItem('ms-balance', String(balance)); } catch(e){} }
+function renderWallet(){
+  document.getElementById('walletBalance').textContent = fmt(balance);
+  renderTx();
+}
+function addTx(title, amount, credit){
+  try {
+    const stored = JSON.parse(localStorage.getItem('ms-txs') || '[]');
+    stored.unshift({title: title, date: 'Today', amount: amount, credit: credit});
+    localStorage.setItem('ms-txs', JSON.stringify(stored));
+  } catch(e){}
+}
+function topup(){
+  const v = parseFloat(prompt('Top-up amount ($):', '50'));
+  if (!v || v <= 0) return;
+  balance = Math.round((balance + v) * 100) / 100;
+  saveBalance(); addTx('Top up', v, true); renderWallet();
+  toast('Topped up ' + fmt(v));
+}
+function withdraw(){
+  const v = parseFloat(prompt('Withdraw amount ($):', '20'));
+  if (!v || v <= 0) return;
+  if (v > balance) { toast('Insufficient balance'); return; }
+  balance = Math.round((balance - v) * 100) / 100;
+  saveBalance(); addTx('Withdraw', v, false); renderWallet();
+  toast('Withdrew ' + fmt(v));
+}
+
+let profile = {name:'Ossama Hamrani', email:'oussamahamrani73@gmail.com', phone:'06 42 85 72 71'};
+function loadProfile(){
+  try { const s = JSON.parse(localStorage.getItem('ms-profile') || 'null'); if (s) profile = s; } catch(e){}
+  applyProfile();
+}
+function applyProfile(){
+  document.getElementById('profName').textContent = profile.name;
+  document.getElementById('profEmail').textContent = profile.email;
+  document.getElementById('profPhone').textContent = profile.phone;
+  const first = profile.name.trim().split(' ')[0] || 'Ossama';
+  document.getElementById('homeGreeting').textContent = 'Hello, ' + first;
+}
+function editProfile(){
+  const name = prompt('Your name:', profile.name);
+  if (name === null) return;
+  const phone = prompt('Your phone:', profile.phone);
+  if (phone === null) return;
+  if (name.trim()) profile.name = name.trim();
+  if (phone.trim()) profile.phone = phone.trim();
+  try { localStorage.setItem('ms-profile', JSON.stringify(profile)); } catch(e){}
+  applyProfile();
+  toast('Profile updated');
+}
+
+function renderTx(){
+  let all = TXS.slice();
+  try { const stored = JSON.parse(localStorage.getItem('ms-txs') || '[]'); all = stored.concat(all); } catch(e){}
+  document.getElementById('txList').innerHTML = all.map(tx => `
+    <div class="card noclick"><div class="tx">
+      <div class="t-ico ${tx.credit ? 'down' : 'up'}">${tx.credit ? '↓' : '↑'}</div>
+      <div><b>${tx.title}</b><br><small>${tx.date}</small></div>
+      <span class="amt ${tx.credit ? 'pos' : 'neg'}">${tx.credit ? '+' : '−'}$${tx.amount.toFixed(2)}</span>
+    </div></div>`).join('');
+}
+
+loadCustom();
+loadBalance();
+loadProfile();
+renderActive();
+renderOrders();
+renderWallet();
+</script>
+</body>
+</html>
