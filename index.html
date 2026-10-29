@@ -26,7 +26,12 @@
   .topbar p{font-size:13px;color:var(--grey)}
   .iconbtn{margin-left:auto;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer;flex-shrink:0}
   .search{width:100%;padding:13px 14px 13px 42px;border:1px solid var(--line);border-radius:16px;font-size:15px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;outline:none}
-  #view-booking input{background-image:none}
+  #view-booking input, #view-addresses input, #view-payments input, #view-payments select{background-image:none}
+  .delbtn{background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap}
+  .tgl{padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:#fff;font-weight:700;cursor:pointer}
+  .tgl.on{background:var(--green);color:#fff;border-color:var(--green)}
+  details summary{cursor:pointer;font-weight:700}
+  details p{color:var(--grey);font-size:14px;margin-top:6px}
   .stats{display:flex;gap:12px;margin:20px 0 24px}
   .stat{flex:1;background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 6px;text-align:center}
   .stat b{display:block;font-size:22px;color:var(--navy)}
@@ -174,9 +179,10 @@
         <label style="font-size:13px;color:#6B7280">Product</label>
         <input id="bkProduct" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Shoes, Watch, Books…">
         <label style="font-size:13px;color:#6B7280">From (city)</label>
-        <input id="bkFrom" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Casablanca">
+        <input id="bkFrom" class="search" list="addrList" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Casablanca">
         <label style="font-size:13px;color:#6B7280">To (city)</label>
-        <input id="bkTo" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Rabat">
+        <input id="bkTo" class="search" list="addrList" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Rabat">
+        <datalist id="addrList"></datalist>
         <label style="font-size:13px;color:#6B7280">Weight (kg)</label>
         <input id="bkWeight" class="search" style="padding-left:14px;margin:6px 0 14px" type="number" min="0.1" step="0.1" value="1" oninput="updateEstimate()">
         <div class="drow"><span>Estimated price</span><b id="bkEstimate">$7.50</b></div>
@@ -217,13 +223,107 @@
       </div>
       <h2>Settings</h2>
       <ul class="menu">
-        <li onclick="toast('My addresses is a mock in this demo')"><span>📍</span>My addresses<i>›</i></li>
-        <li onclick="toast('Payment methods is a mock in this demo')"><span>💳</span>Payment methods<i>›</i></li>
-        <li onclick="toast('Notifications is a mock in this demo')"><span>🔔</span>Notifications<i>›</i></li>
-        <li onclick="toast('Help & support is a mock in this demo')"><span>❓</span>Help &amp; support<i>›</i></li>
-        <li onclick="toast('Settings is a mock in this demo')"><span>⚙️</span>Settings<i>›</i></li>
+        <li onclick="openSub('addresses')"><span>📍</span>My addresses<i>›</i></li>
+        <li onclick="openSub('payments')"><span>💳</span>Payment methods<i>›</i></li>
+        <li onclick="openSub('notifs')"><span>🔔</span>Notifications<i>›</i></li>
+        <li onclick="openSub('help')"><span>❓</span>Help &amp; support<i>›</i></li>
+        <li onclick="openSub('settings')"><span>⚙️</span>Settings<i>›</i></li>
       </ul>
-      <button class="logout" onclick="toast('Log out is a mock in this demo')">Log out</button>
+      <button class="logout" onclick="logout()">Log out</button>
+    </div>
+  </section>
+
+  <!-- ============ ADDRESSES ============ -->
+  <section id="view-addresses" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>My addresses</h1>
+    </div>
+    <div class="pad">
+      <div id="addrListBox"></div>
+      <div class="card noclick">
+        <label style="font-size:13px;color:#6B7280">Label</label>
+        <input id="addrLabel" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Home, Office">
+        <label style="font-size:13px;color:#6B7280">Address</label>
+        <input id="addrText" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="Street, city…">
+        <button class="sendbtn" onclick="addAddress()">Add address</button>
+        <p style="font-size:13px;color:#6B7280;margin-top:12px">Saved addresses appear as suggestions in the booking form.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PAYMENTS ============ -->
+  <section id="view-payments" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Payment methods</h1>
+    </div>
+    <div class="pad">
+      <div id="payListBox"></div>
+      <div class="card noclick">
+        <label style="font-size:13px;color:#6B7280">Label</label>
+        <input id="payLabel" class="search" style="padding-left:14px;margin:6px 0 14px" placeholder="e.g. Main card">
+        <label style="font-size:13px;color:#6B7280">Type</label>
+        <select id="payType" class="search" style="padding-left:14px;margin:6px 0 14px">
+          <option>Visa</option><option>Mastercard</option><option>Cash</option>
+        </select>
+        <label style="font-size:13px;color:#6B7280">Last 4 digits</label>
+        <input id="payLast4" class="search" style="padding-left:14px;margin:6px 0 14px" inputmode="numeric" maxlength="4" placeholder="e.g. 4242">
+        <button class="sendbtn" onclick="addPay()">Add payment method</button>
+        <p style="font-size:13px;color:#6B7280;margin-top:12px">Only a label, the card type and the last 4 digits are stored on this device — never a full card number.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NOTIFICATIONS ============ -->
+  <section id="view-notifs" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Notifications</h1>
+    </div>
+    <div class="pad">
+      <div class="card noclick" id="notifBox"></div>
+    </div>
+  </section>
+
+  <!-- ============ HELP ============ -->
+  <section id="view-help" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Help &amp; support</h1>
+    </div>
+    <div class="pad">
+      <div class="card noclick">
+        <details><summary>How do I book a parcel?</summary><p>Go to Home → Send a new parcel, fill product, cities and weight, then Confirm booking. You get a booking number and the parcel appears in Orders and Tracking.</p></details>
+      </div>
+      <div class="card noclick">
+        <details><summary>How do I track my parcel?</summary><p>Open Orders, tap a parcel, and the Track screen shows the route, the courier and the delivery timeline.</p></details>
+      </div>
+      <div class="card noclick">
+        <details><summary>How does the wallet work?</summary><p>Your balance starts at $256.00. Each booking deducts its price. Top up or withdraw from the Wallet tab — everything is recorded in Transactions.</p></details>
+      </div>
+      <div class="card noclick">
+        <details><summary>Where is my data stored?</summary><p>On your own device only. There is no server: clearing the app data in Settings removes everything.</p></details>
+      </div>
+      <div class="card noclick">
+        <div class="drow"><span>Contact</span><b>oussamahamrani73@gmail.com</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section id="view-settings" class="view">
+    <div class="topbar">
+      <button class="backbtn" onclick="goBack()">←</button>
+      <h1>Settings</h1>
+    </div>
+    <div class="pad">
+      <div class="card noclick">
+        <div class="drow"><span>Version</span><b>My Shipping 1.2</b></div><hr>
+        <div class="drow"><span>Data storage</span><b>On this device only</b></div>
+      </div>
+      <button class="logout" onclick="clearAllData()">Clear all my data</button>
+      <p style="font-size:13px;color:#6B7280;text-align:center;margin-top:12px">Removes your parcels, wallet history, addresses, payment methods and profile from this device.</p>
     </div>
   </section>
 
@@ -387,7 +487,7 @@ function searchBooking(){
   if (!q) return;
   const found = PARCELS.find(p => p.id.includes(q));
   if (found) openTrack(found.id);
-  else toast('No parcel found for "' + q + '" (mock data)');
+  else toast('No parcel found for "' + q + '"');
 }
 
 function openBooking(){
@@ -464,7 +564,7 @@ function submitBooking(){
   saveCustom(p);
   renderActive();
   renderOrders();
-  toast('Booking confirmed: ' + p.id);
+  notify('order', 'Booking confirmed: ' + p.id);
   openTrack(p.id);
 }
 
@@ -488,7 +588,7 @@ function topup(){
   if (!v || v <= 0) return;
   balance = Math.round((balance + v) * 100) / 100;
   saveBalance(); addTx('Top up', v, true); renderWallet();
-  toast('Topped up ' + fmt(v));
+  notify('wallet', 'Topped up ' + fmt(v));
 }
 function withdraw(){
   const v = parseFloat(prompt('Withdraw amount ($):', '20'));
@@ -496,7 +596,7 @@ function withdraw(){
   if (v > balance) { toast('Insufficient balance'); return; }
   balance = Math.round((balance - v) * 100) / 100;
   saveBalance(); addTx('Withdraw', v, false); renderWallet();
-  toast('Withdrew ' + fmt(v));
+  notify('wallet', 'Withdrew ' + fmt(v));
 }
 
 let profile = {name:'Ossama Hamrani', email:'oussamahamrani73@gmail.com', phone:'06 42 85 72 71'};
@@ -534,12 +634,125 @@ function renderTx(){
     </div></div>`).join('');
 }
 
+function openSub(name){
+  prevView = 'account';
+  showView(name);
+  renderAddresses();
+  renderPayments();
+  renderNotifs();
+}
+
+function uid(){ return Date.now().toString(36) + Math.floor(Math.random() * 999).toString(36); }
+function getList(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
+function setList(key, arr){ try { localStorage.setItem(key, JSON.stringify(arr)); } catch(e){} }
+
+function renderAddresses(){
+  const list = getList('ms-addresses');
+  document.getElementById('addrListBox').innerHTML = list.length ? list.map(a => `
+    <div class="card noclick"><div class="tx">
+      <div><b>${a.label}</b><br><small>${a.addr}</small></div>
+      <button class="delbtn" onclick="delAddress('${a.id}')">Delete</button>
+    </div></div>`).join('') : '<div class="empty">No saved addresses yet</div>';
+  document.getElementById('addrList').innerHTML = list.map(a => `<option value="${a.addr}">`).join('');
+}
+function addAddress(){
+  const label = document.getElementById('addrLabel').value.trim();
+  const addr = document.getElementById('addrText').value.trim();
+  if (!label || !addr) { toast('Fill label and address'); return; }
+  const list = getList('ms-addresses');
+  list.push({id: uid(), label: label, addr: addr});
+  setList('ms-addresses', list);
+  document.getElementById('addrLabel').value = '';
+  document.getElementById('addrText').value = '';
+  renderAddresses();
+  toast('Address saved');
+}
+function delAddress(id){
+  setList('ms-addresses', getList('ms-addresses').filter(a => a.id !== id));
+  renderAddresses();
+}
+
+function renderPayments(){
+  const list = getList('ms-payments');
+  document.getElementById('payListBox').innerHTML = list.length ? list.map(p => `
+    <div class="card noclick"><div class="tx">
+      <div class="t-ico down">💳</div>
+      <div><b>${p.label}</b><br><small>${p.type} •••• ${p.last4}${p.def ? ' • Default' : ''}</small></div>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        ${p.def ? '' : `<button class="delbtn" onclick="setDefaultPay('${p.id}')">Default</button>`}
+        <button class="delbtn" onclick="delPay('${p.id}')">Delete</button>
+      </span>
+    </div></div>`).join('') : '<div class="empty">No payment methods yet</div>';
+}
+function addPay(){
+  const label = document.getElementById('payLabel').value.trim();
+  const type = document.getElementById('payType').value;
+  const last4 = document.getElementById('payLast4').value.trim();
+  if (!label || !/^\d{4}$/.test(last4)) { toast('Fill a label and the last 4 digits'); return; }
+  const list = getList('ms-payments');
+  list.push({id: uid(), label: label, type: type, last4: last4, def: list.length === 0});
+  setList('ms-payments', list);
+  document.getElementById('payLabel').value = '';
+  document.getElementById('payLast4').value = '';
+  renderPayments();
+  toast('Payment method saved');
+}
+function delPay(id){
+  let list = getList('ms-payments').filter(p => p.id !== id);
+  if (list.length && !list.some(p => p.def)) list[0].def = true;
+  setList('ms-payments', list);
+  renderPayments();
+}
+function setDefaultPay(id){
+  setList('ms-payments', getList('ms-payments').map(p => ({...p, def: p.id === id})));
+  renderPayments();
+}
+
+let notifs = {order:true, wallet:true, promo:true};
+function loadNotifs(){
+  try { const s = JSON.parse(localStorage.getItem('ms-notifs') || 'null'); if (s) notifs = s; } catch(e){}
+}
+function saveNotifs(){ try { localStorage.setItem('ms-notifs', JSON.stringify(notifs)); } catch(e){} }
+function notify(kind, msg){ if (notifs[kind] !== false) toast(msg); }
+function renderNotifs(){
+  const rows = [
+    ['order', 'Order updates', 'Booking confirmations and parcel status'],
+    ['wallet', 'Wallet alerts', 'Top-ups, withdrawals and payments'],
+    ['promo', 'Promotions', 'Offers and news'],
+  ];
+  document.getElementById('notifBox').innerHTML = rows.map(r => `
+    <div class="drow" style="padding:10px 0">
+      <span><b style="color:#1B1B2F">${r[1]}</b><br><small style="color:#6B7280">${r[2]}</small></span>
+      <button class="tgl ${notifs[r[0]] ? 'on' : ''}" onclick="toggleNotif('${r[0]}')">${notifs[r[0]] ? 'ON' : 'OFF'}</button>
+    </div>`).join('<hr>');
+}
+function toggleNotif(kind){
+  notifs[kind] = !notifs[kind];
+  saveNotifs();
+  renderNotifs();
+}
+
+function clearAllData(){
+  if (!confirm('Clear all local data? Your parcels, wallet history, addresses, payment methods and profile will be removed from this device.')) return;
+  try { localStorage.clear(); } catch(e){}
+  location.reload();
+}
+function logout(){
+  if (!confirm('Log out? This clears your local app data on this device.')) return;
+  try { localStorage.clear(); } catch(e){}
+  location.reload();
+}
+
 loadCustom();
 loadBalance();
 loadProfile();
+loadNotifs();
 renderActive();
 renderOrders();
 renderWallet();
+renderAddresses();
+renderPayments();
+renderNotifs();
 </script>
 </body>
 </html>
