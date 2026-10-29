@@ -964,8 +964,7 @@ async function initTrackMap(p, progress){
   if (p.status !== 'delivered') {
     const cLat = from.lat + (to.lat - from.lat) * t;
     const cLon = from.lon + (to.lon - from.lon) * t;
-    const truckIcon = L.divIcon({className: '', html: '<div style="font-size:26px;line-height:1">🚚</div>', iconSize: [30, 30], iconAnchor: [15, 15]});
-    L.marker([cLat, cLon], {icon: truckIcon}).addTo(trackMap).bindPopup('Courier is here');
+    const truckIcon = L.circleMarker([cLat, cLon], {radius: 10, color: '#fff', weight: 3, fillColor: '#232B7A', fillOpacity: 1}).addTo(trackMap).bindPopup('Courier is here');
   }
   trackMap.fitBounds([fromLL, toLL], {padding: [30, 30]});
   setTimeout(() => { try { if (trackMap) trackMap.invalidateSize(); } catch(e){} }, 100);
