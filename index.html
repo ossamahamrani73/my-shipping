@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="My Shipping">
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--navy:#232B7A;--bg:#F6F7FB;--card:#fff;--line:#E5E7F0;--grey:#6B7280;--blue:#2F6BFF;--amber:#F59E0B;--green:#22C55E;--red:#EF4444}
@@ -28,6 +29,7 @@
   .search{width:100%;padding:13px 14px 13px 42px;border:1px solid var(--line);border-radius:16px;font-size:15px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E") no-repeat 12px center;outline:none}
   #view-booking input, #view-addresses input, #view-payments input, #view-payments select, #view-couriers input, #view-track select{background-image:none}
   a.callbtn{text-decoration:none;display:flex;align-items:center;justify-content:center}
+  #trackMap{height:260px;width:100%;z-index:0}
   .delbtn{background:none;border:none;color:var(--red);font-weight:700;cursor:pointer;font-size:13px;white-space:nowrap}
   .tgl{padding:8px 14px;border-radius:20px;border:1px solid var(--line);background:#fff;font-weight:700;cursor:pointer}
   .tgl.on{background:var(--green);color:#fff;border-color:var(--green)}
@@ -116,7 +118,7 @@
   .navbar button{flex:1;background:none;border:none;font-size:11px;font-weight:600;color:var(--grey);cursor:pointer;padding:6px 0 2px}
   .navbar button i{display:block;font-style:normal;font-size:22px;margin-bottom:2px}
   .navbar button.active{color:var(--navy)}
-  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:#1B1B2F;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:50;display:none;max-width:88vw;text-align:center}
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:#1B1B2F;color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;z-index:2000;display:none;max-width:88vw;text-align:center}
 </style>
 </head>
 <body>
@@ -360,6 +362,7 @@
   </nav>
 </div>
 <div class="toast" id="toast"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const PARCELS = [
   {id:'BKG-2322-HD3', product:'Shoes', icon:'👞', from:'New York', to:'San Francisco', fromAddr:'New York, USA', toAddr:'San Francisco, USA', status:'transit', date:'Today', time:'10:42 AM', price:12.50, weight:'2.4 kg', progress:2},
@@ -484,7 +487,8 @@ function openTrack(id){
   const cour = assignedCourier(p.id);
   const courCard = courierCardHTML(p.id, cour);
   document.getElementById('trackContent').innerHTML = `
-    <div class="mapbox">${mapSVG(progress)}</div>
+    <div class="mapbox"><div id="trackMap"></div></div>
+    <p style="text-align:center;margin:12px 0 4px"><a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(p.fromAddr)}&destination=${encodeURIComponent(p.toAddr)}" target="_blank" style="color:#232B7A;font-weight:700;font-size:14px">Open route in Google Maps ↗</a></p>
     ${courCard}
     <div class="card noclick">
       <div class="drow"><span>Booking number</span><b>${p.id}</b></div><hr>
@@ -499,6 +503,7 @@ function openTrack(id){
     ${p.status === 'delivered' ? `<div class="okbox">✅<span>Parcel delivered. Thank you for shipping with us!</span></div>` : ''}
   `;
   showView('track');
+  initTrackMap(p, progress);
 }
 
 function searchBooking(){
@@ -859,6 +864,60 @@ function courierCardHTML(pid, cour){
       </div>
       <p style="font-size:13px;color:#6B7280;margin-top:10px">Assign a courier to this parcel, or <a href="#" onclick="openSubFrom('couriers');return false;" style="color:#232B7A;font-weight:700">manage couriers</a>.</p>
     </div>`;
+}
+
+let trackMap = null;
+let mapToken = 0;
+function geocodeCacheGet(q){ try { const c = JSON.parse(localStorage.getItem('ms-geocode') || '{}'); return c[q.toLowerCase()] || null; } catch(e){ return null; } }
+function geocodeCacheSet(q, v){ try { const c = JSON.parse(localStorage.getItem('ms-geocode') || '{}'); c[q.toLowerCase()] = v; localStorage.setItem('ms-geocode', JSON.stringify(c)); } catch(e){} }
+async function geocode(q){
+  if (!q) return null;
+  const cached = geocodeCacheGet(q);
+  if (cached) return cached;
+  try {
+    const res = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(q), {headers: {'Accept': 'application/json'}});
+    const data = await res.json();
+    if (data && data.length) {
+      const v = {lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name};
+      geocodeCacheSet(q, v);
+      return v;
+    }
+  } catch(e){}
+  return null;
+}
+async function initTrackMap(p, progress){
+  const myToken = ++mapToken;
+  const box = document.getElementById('trackMap');
+  if (!box) return;
+  if (trackMap) { try { trackMap.remove(); } catch(e){} trackMap = null; }
+  const fallback = () => {
+    const parent = box.parentElement;
+    if (parent) parent.outerHTML = '<div class="mapbox">' + mapSVG(progress) + '</div>';
+  };
+  if (typeof L === 'undefined') { fallback(); return; }
+  box.innerHTML = '<p style="padding:100px 16px;text-align:center;color:#6B7280">Loading map…</p>';
+  const from = await geocode(p.fromAddr) || await geocode(p.from);
+  if (myToken !== mapToken) return;
+  const to = await geocode(p.toAddr) || await geocode(p.to);
+  if (myToken !== mapToken) return;
+  if (!from || !to) { fallback(); return; }
+  if (!document.getElementById('trackMap')) return;
+  box.innerHTML = '';
+  trackMap = L.map('trackMap', {scrollWheelZoom: false}).setView([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], 4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '&copy; OpenStreetMap contributors'}).addTo(trackMap);
+  const fromLL = [from.lat, from.lon], toLL = [to.lat, to.lon];
+  L.marker(fromLL).addTo(trackMap).bindPopup('From: ' + p.from);
+  L.marker(toLL).addTo(trackMap).bindPopup('To: ' + p.to);
+  L.polyline([fromLL, toLL], {color: '#232B7A', weight: 4, opacity: 0.8}).addTo(trackMap);
+  const t = Math.min(progress / 4, 1);
+  if (p.status !== 'delivered') {
+    const cLat = from.lat + (to.lat - from.lat) * t;
+    const cLon = from.lon + (to.lon - from.lon) * t;
+    const truckIcon = L.divIcon({className: '', html: '<div style="font-size:26px;line-height:1">🚚</div>', iconSize: [30, 30], iconAnchor: [15, 15]});
+    L.marker([cLat, cLon], {icon: truckIcon}).addTo(trackMap).bindPopup('Courier is here');
+  }
+  trackMap.fitBounds([fromLL, toLL], {padding: [30, 30]});
+  setTimeout(() => { try { if (trackMap) trackMap.invalidateSize(); } catch(e){} }, 100);
 }
 
 loadCustom();
